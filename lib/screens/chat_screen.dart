@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:clean_aceh/utils/constants.dart';
 import 'dart:math';
+import 'package:clean_aceh/screens/order_detail_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   final String cleanerName;
@@ -21,6 +22,9 @@ class _ChatScreenState extends State<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   final List<Map<String, dynamic>> _messages = [];
   bool _isTyping = false;
+  String? _editingMessageId; // Track which message is being edited
+  final String _orderInfo = 'Pesanan Pembersihan Umum - Selasa, 29 April 2025, 12:00';
+  final String _orderId = '12345';
 
   @override
   void initState() {
@@ -33,30 +37,31 @@ class _ChatScreenState extends State<ChatScreen> {
   void _loadInitialMessages() {
     final List<Map<String, dynamic>> initialMessages = [
       {
-        'text':
-            'Halo! Saya Mustapa Jamija, pelanggan Anda untuk pembersihan hari ini.',
+        'id': '1',
+        'text': 'Halo! Saya Mustapa Jamija, pelanggan Anda untuk pembersihan hari ini.',
         'isUser': true,
-        'time': DateTime.now().subtract(const Duration(minutes: 30)),
+        'time': DateTime.now().subtract(const Duration(minutes: 40)),
       },
       {
-        'text':
-            'Halo Pak Mustapa! Saya ${widget.cleanerName}, terima kasih sudah memesan layanan kami. Ada yang bisa saya bantu?',
+        'id': '2',
+        'text': 'Halo Pak Mustapa! Saya ${widget.cleanerName}, terima kasih sudah memesan layanan kami. Ada yang bisa saya bantu?',
         'isUser': false,
-        'time': DateTime.now().subtract(const Duration(minutes: 28)),
+        'time': DateTime.now().subtract(const Duration(minutes: 38)),
       },
       {
-        'text':
-            'Saya ingin menanyakan apakah Anda sudah dalam perjalanan menuju rumah saya?',
+        'id': '3',
+        'text': 'Saya ingin menanyakan apakah Anda sudah dalam perjalanan menuju rumah saya?',
         'isUser': true,
-        'time': DateTime.now().subtract(const Duration(minutes: 25)),
+        'time': DateTime.now().subtract(const Duration(minutes: 35)),
       },
       {
-        'text':
-            'Ya, saya sedang dalam perjalanan. Perkiraan tiba dalam 15 menit lagi. Mohon maaf atas keterlambatan, ada sedikit kemacetan di jalan.',
+        'id': '4',
+        'text': 'Ya, saya sedang dalam perjalanan. Perkiraan tiba dalam 15 menit lagi. Mohon maaf atas keterlambatan, ada sedikit kemacetan di jalan.',
         'isUser': false,
         'time': DateTime.now().subtract(const Duration(minutes: 23)),
       },
       {
+        'id': '5',
         'text': 'Baik, tidak masalah. Saya akan menunggu kedatangan Anda.',
         'isUser': true,
         'time': DateTime.now().subtract(const Duration(minutes: 20)),
@@ -73,36 +78,51 @@ class _ChatScreenState extends State<ChatScreen> {
       return;
     }
 
-    // Add user message
-    setState(() {
-      _messages.add({
-        'text': _messageController.text.trim(),
-        'isUser': true,
-        'time': DateTime.now(),
+    if (_editingMessageId != null) {
+      // Update existing message if in edit mode
+      setState(() {
+        final messageIndex = _messages.indexWhere((msg) => msg['id'] == _editingMessageId);
+        if (messageIndex != -1) {
+          _messages[messageIndex]['text'] = _messageController.text.trim();
+          _messages[messageIndex]['isEdited'] = true;
+        }
+        _editingMessageId = null;
+        _messageController.clear();
       });
-      _messageController.clear();
-      _isTyping = true;
-    });
-
-    // Scroll to bottom
-    _scrollToBottom();
-
-    // Simulate cleaner response after 1-3 seconds
-    Future.delayed(Duration(seconds: Random().nextInt(2) + 1), () {
-      if (mounted) {
-        setState(() {
-          _isTyping = false;
-          _messages.add({
-            'text': _getRandomResponse(),
-            'isUser': false,
-            'time': DateTime.now(),
-          });
+    } else {
+      // Add new message
+      setState(() {
+        _messages.add({
+          'id': 'msg_${DateTime.now().millisecondsSinceEpoch}',
+          'text': _messageController.text.trim(),
+          'isUser': true,
+          'time': DateTime.now(),
         });
+        _messageController.clear();
+        _isTyping = true;
+      });
 
-        // Scroll to bottom again
-        _scrollToBottom();
-      }
-    });
+      // Scroll to bottom
+      _scrollToBottom();
+
+      // Simulate cleaner response after 1-3 seconds
+      Future.delayed(Duration(seconds: Random().nextInt(2) + 1), () {
+        if (mounted) {
+          setState(() {
+            _isTyping = false;
+            _messages.add({
+              'id': 'msg_${DateTime.now().millisecondsSinceEpoch + 1}',
+              'text': _getRandomResponse(),
+              'isUser': false,
+              'time': DateTime.now(),
+            });
+          });
+
+          // Scroll to bottom again
+          _scrollToBottom();
+        }
+      });
+    }
   }
 
   void _scrollToBottom() {
@@ -132,6 +152,171 @@ class _ChatScreenState extends State<ChatScreen> {
     return responses[Random().nextInt(responses.length)];
   }
 
+  void _editMessage(String messageId) {
+    final message = _messages.firstWhere((msg) => msg['id'] == messageId);
+    setState(() {
+      _editingMessageId = messageId;
+      _messageController.text = message['text'];
+    });
+    // Focus on text field
+    FocusScope.of(context).requestFocus(FocusNode());
+  }
+
+  void _deleteMessage(String messageId) {
+    setState(() {
+      _messages.removeWhere((msg) => msg['id'] == messageId);
+    });
+    Navigator.pop(context); // Close the modal
+  }
+
+  void _showOrderDetails() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const OrderDetailScreen(),
+      ),
+    );
+  }
+
+  void _showCleanerProfile() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          height: MediaQuery.of(context).size.height * 0.7,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Profile Header
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundColor: AppColors.primary,
+                    child: Text(
+                      widget.cleanerInitial,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.cleanerName,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        const Row(
+                          children: [
+                            Icon(Icons.star, color: Colors.amber, size: 18),
+                            SizedBox(width: 5),
+                            Text('4.8 (230 ulasan)'),
+                          ],
+                        ),
+                        const SizedBox(height: 5),
+                        const Text(
+                          '124 pekerjaan selesai',
+                          style: TextStyle(
+                            color: AppColors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 30),
+              
+              // Profile Info
+              const Text(
+                'Tentang',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'Saya adalah seorang pembersih profesional dengan pengalaman lebih dari 5 tahun. Saya mengutamakan kepuasan pelanggan dan hasil yang bersih, rapi, serta higienis.',
+                style: TextStyle(height: 1.5),
+              ),
+              const SizedBox(height: 20),
+              
+              // Skill Section
+              const Text(
+                'Keahlian',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  _buildSkillChip('Pembersihan Umum'),
+                  _buildSkillChip('Pembersihan Dapur'),
+                  _buildSkillChip('Pembersihan Kamar Mandi'),
+                  _buildSkillChip('Pembersihan Furnitur'),
+                ],
+              ),
+              
+              const Spacer(),
+              
+              // Action Buttons
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    // Navigate to full profile page
+                  },
+                  child: const Text('Lihat Profil Lengkap'),
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Tutup'),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSkillChip(String skill) {
+    return Chip(
+      label: Text(skill),
+      backgroundColor: AppColors.primary.withOpacity(0.1),
+      labelStyle: const TextStyle(
+        color: AppColors.primary,
+        fontSize: 12,
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _messageController.dispose();
@@ -143,23 +328,26 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: AppColors.primary,
-              child: Text(
-                widget.cleanerInitial,
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
+        title: GestureDetector(
+          onTap: _showCleanerProfile,
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: AppColors.primary,
+                child: Text(
+                  widget.cleanerInitial,
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Text(widget.cleanerName),
-          ],
+              const SizedBox(width: 8),
+              Text(widget.cleanerName),
+            ],
+          ),
         ),
         actions: [
           IconButton(
@@ -171,117 +359,88 @@ class _ChatScreenState extends State<ChatScreen> {
               );
             },
           ),
-          IconButton(
+          PopupMenuButton(
             icon: const Icon(Icons.more_vert),
-            onPressed: () {
-              // Show more options
-              showModalBottomSheet(
-                context: context,
-                builder: (context) {
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ListTile(
-                        leading: const Icon(Icons.person),
-                        title: const Text('Lihat Profil'),
-                        onTap: () {
-                          Navigator.pop(context);
-                          // Navigate to cleaner profile
-                        },
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.block),
-                        title: const Text('Blokir Pembersih'),
-                        onTap: () {
-                          Navigator.pop(context);
-                          // Show block confirmation
-                          showDialog(
-                            context: context,
-                            builder:
-                                (context) => AlertDialog(
-                                  title: const Text('Blokir Pembersih'),
-                                  content: Text(
-                                    'Anda yakin ingin memblokir ${widget.cleanerName}?',
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: const Text('Batal'),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              '${widget.cleanerName} telah diblokir',
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.red,
-                                      ),
-                                      child: const Text('Blokir'),
-                                    ),
-                                  ],
-                                ),
-                          );
-                        },
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.report),
-                        title: const Text('Laporkan Masalah'),
-                        onTap: () {
-                          Navigator.pop(context);
-                          // Show report dialog
-                        },
-                      ),
-                    ],
-                  );
-                },
-              );
+            onSelected: (value) {
+              if (value == 'profile') {
+                _showCleanerProfile();
+              } else if (value == 'block') {
+                _showBlockDialog();
+              } else if (value == 'report') {
+                _showReportDialog();
+              }
             },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'profile',
+                child: Row(
+                  children: [
+                    Icon(Icons.person, size: 20),
+                    SizedBox(width: 8),
+                    Text('Lihat Profil'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'block',
+                child: Row(
+                  children: [
+                    Icon(Icons.block, size: 20),
+                    SizedBox(width: 8),
+                    Text('Blokir Pembersih'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'report',
+                child: Row(
+                  children: [
+                    Icon(Icons.report_problem, size: 20),
+                    SizedBox(width: 8),
+                    Text('Laporkan Masalah'),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
       body: Column(
         children: [
           // Chat header with current order info
-          Container(
-            padding: const EdgeInsets.all(12),
-            color: AppColors.primary.withOpacity(0.1),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.info_outline,
-                  color: AppColors.primary,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                const Expanded(
-                  child: Text(
-                    'Pesanan Pembersihan Umum - Selasa, 29 April 2025, 12:00',
-                    style: TextStyle(fontSize: 12, color: AppColors.primary),
+          GestureDetector(
+            onTap: _showOrderDetails,
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              color: AppColors.primary.withOpacity(0.1),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.info_outline,
+                    color: AppColors.primary,
+                    size: 20,
                   ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    // View order details
-                  },
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: const Size(60, 30),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _orderInfo,
+                      style: const TextStyle(fontSize: 12, color: AppColors.primary),
+                    ),
                   ),
-                  child: const Text(
-                    'Lihat',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                  TextButton(
+                    onPressed: _showOrderDetails,
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(60, 30),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: const Text(
+                      'Lihat',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 
@@ -296,16 +455,17 @@ class _ChatScreenState extends State<ChatScreen> {
                 final bool isUser = message['isUser'] as bool;
 
                 return _buildMessageBubble(
+                  id: message['id'] as String,
                   text: message['text'] as String,
                   isUser: isUser,
                   time: message['time'] as DateTime,
                   showAvatar: _shouldShowAvatar(index),
+                  isEdited: message['isEdited'] ?? false,
                 );
               },
             ),
           ),
 
-          // Typing indicator
           // Typing indicator
           if (_isTyping)
             Container(
@@ -399,7 +559,16 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: TextField(
                     controller: _messageController,
                     decoration: InputDecoration(
-                      hintText: 'Tulis pesan...',
+                      hintText: _editingMessageId == null 
+                          ? 'Tulis pesan...' 
+                          : 'Edit pesan...',
+                      prefixIcon: _editingMessageId != null 
+                          ? Icon(
+                              Icons.edit,
+                              color: AppColors.primary,
+                              size: 20,
+                            )
+                          : null,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide.none,
@@ -415,6 +584,17 @@ class _ChatScreenState extends State<ChatScreen> {
                     onSubmitted: (_) => _sendMessage(),
                   ),
                 ),
+                if (_editingMessageId != null)
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    color: Colors.red,
+                    onPressed: () {
+                      setState(() {
+                        _editingMessageId = null;
+                        _messageController.clear();
+                      });
+                    },
+                  ),
                 IconButton(
                   icon: const Icon(Icons.send),
                   color: AppColors.primary,
@@ -429,10 +609,12 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildMessageBubble({
+    required String id,
     required String text,
     required bool isUser,
     required DateTime time,
     required bool showAvatar,
+    bool isEdited = false,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -460,47 +642,60 @@ class _ChatScreenState extends State<ChatScreen> {
           const SizedBox(width: 8),
 
           Flexible(
-            child: Column(
-              crossAxisAlignment:
-                  isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isUser ? AppColors.primary : AppColors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(16),
-                      topRight: const Radius.circular(16),
-                      bottomLeft:
-                          isUser ? const Radius.circular(16) : Radius.zero,
-                      bottomRight:
-                          isUser ? Radius.zero : const Radius.circular(16),
+            child: GestureDetector(
+              onLongPress: isUser ? () => _showMessageOptions(id) : null,
+              child: Column(
+                crossAxisAlignment:
+                    isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
-                        spreadRadius: 1,
-                        blurRadius: 2,
-                        offset: const Offset(0, 1),
+                    decoration: BoxDecoration(
+                      color: isUser ? AppColors.primary : AppColors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: const Radius.circular(16),
+                        topRight: const Radius.circular(16),
+                        bottomLeft:
+                            isUser ? const Radius.circular(16) : Radius.zero,
+                        bottomRight:
+                            isUser ? Radius.zero : const Radius.circular(16),
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.1),
+                          spreadRadius: 1,
+                          blurRadius: 2,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      text,
+                      style: TextStyle(
+                        color: isUser ? AppColors.white : AppColors.black,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _formatTime(time),
+                        style: const TextStyle(color: AppColors.grey, fontSize: 10),
+                      ),
+                      if (isEdited)
+                        const Text(
+                          ' • diedit',
+                          style: TextStyle(color: AppColors.grey, fontSize: 10, fontStyle: FontStyle.italic),
+                        ),
                     ],
                   ),
-                  child: Text(
-                    text,
-                    style: TextStyle(
-                      color: isUser ? AppColors.white : AppColors.black,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _formatTime(time),
-                  style: const TextStyle(color: AppColors.grey, fontSize: 10),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 
@@ -522,6 +717,154 @@ class _ChatScreenState extends State<ChatScreen> {
           else if (isUser && !showAvatar)
             const SizedBox(width: 32),
         ],
+      ),
+    );
+  }
+
+  void _showMessageOptions(String messageId) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: const Text('Edit Pesan'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _editMessage(messageId);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text('Hapus Pesan', style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  _showDeleteConfirmation(messageId);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.copy),
+                title: const Text('Salin Pesan'),
+                onTap: () {
+                  final message = _messages.firstWhere((msg) => msg['id'] == messageId);
+                  // Copy to clipboard would go here
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Pesan disalin')),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showDeleteConfirmation(String messageId) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus Pesan'),
+        content: const Text('Apakah Anda yakin ingin menghapus pesan ini?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () => _deleteMessage(messageId),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showBlockDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Blokir Pembersih'),
+        content: Text(
+          'Anda yakin ingin memblokir ${widget.cleanerName}?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    '${widget.cleanerName} telah diblokir',
+                  ),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: const Text('Blokir'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showReportDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Laporkan Masalah'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Pilih jenis masalah:'),
+            const SizedBox(height: 16),
+            _buildReportOption('Pembersih tidak sopan'),
+            _buildReportOption('Kualitas pembersihan buruk'),
+            _buildReportOption('Pembersih tidak datang tepat waktu'),
+            _buildReportOption('Penipuan'),
+            _buildReportOption('Lainnya'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReportOption(String option) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Anda telah melaporkan: $option')),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        margin: const EdgeInsets.only(bottom: 8),
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.lightGrey),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(option),
       ),
     );
   }

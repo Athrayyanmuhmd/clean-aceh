@@ -25,6 +25,8 @@ import 'package:clean_aceh/utils/constants.dart';
 import 'package:clean_aceh/screens/add_payment_method_screen.dart';
 import 'package:clean_aceh/screens/add_ewallet_screen.dart';
 import 'package:clean_aceh/screens/add_bank_screen.dart';
+import 'package:clean_aceh/screens/login_screen.dart';
+import 'package:clean_aceh/screens/register_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -68,7 +70,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const HomeScreen(),
+      home: const LoginScreen(), // Changed from HomeScreen to LoginScreen
     );
   }
 }
