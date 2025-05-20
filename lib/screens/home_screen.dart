@@ -9,7 +9,7 @@ import 'package:clean_aceh/screens/promo_screen.dart';
 import 'package:clean_aceh/screens/services_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();

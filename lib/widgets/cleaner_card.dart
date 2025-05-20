@@ -10,14 +10,14 @@ class CleanerCard extends StatelessWidget {
   final String? dateInfo;
 
   const CleanerCard({
-    Key? key,
+    super.key,
     required this.name,
     required this.jobCount,
     required this.price,
     required this.initial,
     required this.available,
     this.dateInfo,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

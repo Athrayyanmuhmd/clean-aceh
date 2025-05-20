@@ -8,11 +8,11 @@ class ServiceCard extends StatelessWidget {
   final double basePrice;
 
   const ServiceCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.iconData,
     this.basePrice = 150000,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

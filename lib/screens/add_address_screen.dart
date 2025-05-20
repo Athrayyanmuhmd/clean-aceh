@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:clean_aceh/utils/constants.dart';
 
 class AddAddressScreen extends StatefulWidget {
-  const AddAddressScreen({Key? key}) : super(key: key);
+  const AddAddressScreen({super.key});
 
   @override
   State<AddAddressScreen> createState() => _AddAddressScreenState();

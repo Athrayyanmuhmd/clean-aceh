@@ -4,7 +4,7 @@ import 'package:clean_aceh/screens/order_detail_screen.dart';
 import 'package:clean_aceh/screens/review_screen.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
-  const OrderHistoryScreen({Key? key}) : super(key: key);
+  const OrderHistoryScreen({super.key});
 
   @override
   State<OrderHistoryScreen> createState() => _OrderHistoryScreenState();

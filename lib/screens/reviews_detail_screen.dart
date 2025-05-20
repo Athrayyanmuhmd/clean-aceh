@@ -8,12 +8,12 @@ class ReviewsDetailScreen extends StatefulWidget {
   final int reviewCount;
 
   const ReviewsDetailScreen({
-    Key? key,
+    super.key,
     required this.cleanerName,
     required this.cleanerInitial,
     required this.rating,
     required this.reviewCount,
-  }) : super(key: key);
+  });
 
   @override
   State<ReviewsDetailScreen> createState() => _ReviewsDetailScreenState();

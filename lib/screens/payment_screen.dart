@@ -8,11 +8,11 @@ class PaymentScreen extends StatefulWidget {
   final double totalPrice;
 
   const PaymentScreen({
-    Key? key,
+    super.key,
     required this.cleanerName,
     required this.cleanerInitial,
     required this.totalPrice,
-  }) : super(key: key);
+  });
 
   @override
   State<PaymentScreen> createState() => _PaymentScreenState();

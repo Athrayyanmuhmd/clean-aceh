@@ -9,12 +9,12 @@ class ServiceDetailScreen extends StatefulWidget {
   final double price;
 
   const ServiceDetailScreen({
-    Key? key,
+    super.key,
     required this.cleanerName,
     required this.cleanerInitial,
     required this.jobCount,
     required this.price,
-  }) : super(key: key);
+  });
 
   @override
   State<ServiceDetailScreen> createState() => _ServiceDetailScreenState();

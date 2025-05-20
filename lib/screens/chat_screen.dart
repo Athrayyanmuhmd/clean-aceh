@@ -7,10 +7,10 @@ class ChatScreen extends StatefulWidget {
   final String cleanerInitial;
 
   const ChatScreen({
-    Key? key,
+    super.key,
     required this.cleanerName,
     required this.cleanerInitial,
-  }) : super(key: key);
+  });
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();

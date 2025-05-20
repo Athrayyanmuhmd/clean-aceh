@@ -12,14 +12,14 @@ class CleanerDetailScreen extends StatefulWidget {
   final int reviewCount;
 
   const CleanerDetailScreen({
-    Key? key,
+    super.key,
     required this.name,
     required this.initial,
     required this.jobCount,
     required this.price,
     this.rating = 4.8,
     this.reviewCount = 230,
-  }) : super(key: key);
+  });
 
   @override
   State<CleanerDetailScreen> createState() => _CleanerDetailScreenState();

@@ -6,10 +6,10 @@ class ReviewScreen extends StatefulWidget {
   final String cleanerInitial;
 
   const ReviewScreen({
-    Key? key,
+    super.key,
     required this.cleanerName,
     required this.cleanerInitial,
-  }) : super(key: key);
+  });
 
   @override
   State<ReviewScreen> createState() => _ReviewScreenState();

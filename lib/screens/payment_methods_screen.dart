@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:clean_aceh/utils/constants.dart';
 
 class PaymentMethodsScreen extends StatefulWidget {
-  const PaymentMethodsScreen({Key? key}) : super(key: key);
+  const PaymentMethodsScreen({super.key});
 
   @override
   State<PaymentMethodsScreen> createState() => _PaymentMethodsScreenState();
@@ -236,7 +236,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                   for (int i = 0; i < _paymentMethods.length; i++) {
                     if (_paymentMethods[i]['name'] == name) {
                       _paymentMethods[i]['isConnected'] = true;
-                      _paymentMethods[i]['number'] = '****' + (1000 + i).toString();
+                      _paymentMethods[i]['number'] = '****${1000 + i}';
                       break;
                     }
                   }

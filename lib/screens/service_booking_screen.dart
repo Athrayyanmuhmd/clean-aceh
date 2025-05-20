@@ -8,11 +8,11 @@ class ServiceBookingScreen extends StatefulWidget {
   final double basePrice;
   
   const ServiceBookingScreen({
-    Key? key,
+    super.key,
     required this.serviceType,
     required this.serviceImage,
     required this.basePrice,
-  }) : super(key: key);
+  });
   
   @override
   State<ServiceBookingScreen> createState() => _ServiceBookingScreenState();

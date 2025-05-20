@@ -5,7 +5,7 @@ import 'package:clean_aceh/screens/service_detail_screen.dart';
 import 'package:clean_aceh/screens/cleaner_detail_screen.dart';
 
 class CleanerListScreen extends StatelessWidget {
-  const CleanerListScreen({Key? key}) : super(key: key);
+  const CleanerListScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

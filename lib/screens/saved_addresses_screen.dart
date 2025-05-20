@@ -3,7 +3,7 @@ import 'package:clean_aceh/utils/constants.dart';
 import 'package:clean_aceh/screens/add_address_screen.dart';
 
 class SavedAddressesScreen extends StatelessWidget {
-  const SavedAddressesScreen({Key? key}) : super(key: key);
+  const SavedAddressesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

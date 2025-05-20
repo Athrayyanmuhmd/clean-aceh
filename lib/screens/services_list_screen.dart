@@ -3,7 +3,7 @@ import 'package:clean_aceh/utils/constants.dart';
 import 'package:clean_aceh/screens/service_booking_screen.dart';
 
 class ServicesListScreen extends StatelessWidget {
-  const ServicesListScreen({Key? key}) : super(key: key);
+  const ServicesListScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -3,7 +3,7 @@ import 'package:clean_aceh/utils/constants.dart';
 import 'package:clean_aceh/screens/chat_screen.dart';
 
 class OrderDetailScreen extends StatelessWidget {
-  const OrderDetailScreen({Key? key}) : super(key: key);
+  const OrderDetailScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
